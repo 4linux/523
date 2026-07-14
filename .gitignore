@@ -1,0 +1,37 @@
+# Vagrant
+.vagrant/
+
+# Terraform / OpenTofu
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.backup
+**/.terraform.lock.hcl
+**/terraform.tfvars
+**/override.tf
+**/override.tf.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Kind / Kubernetes
+kubeconfig
+kubeconfig.yaml
+*.kubeconfig
+
+# Logs e temporários
+*.log
+*.tmp
+*.bak
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store

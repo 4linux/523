@@ -2,10 +2,10 @@ Vagrant.configure("2") do |config|
   config.vm.box      = "ubuntu/jammy64"
   config.vm.hostname = "devops-essentials-vm"
 
-  config.vm.network "forwarded_port", guest: 3000, host: 3000, host_ip: "127.0.0.1"  # Gitea
-  config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"  # ArgoCD
-  config.vm.network "forwarded_port", guest: 9090, host: 9090, host_ip: "127.0.0.1"  # App
-  config.vm.network "forwarded_port", guest: 4566, host: 4566, host_ip: "127.0.0.1"  # Floci
+  # Desabilita o vagrant-vbguest (incompatível com VirtualBox 7.1+)
+  config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
+
+  config.vm.network "private_network", ip: "192.168.56.10"
 
   config.vm.provider "virtualbox" do |vb|
     vb.name   = "devops-essentials-vm"
@@ -61,9 +61,8 @@ command -v kind    &>/dev/null && source <(kind completion bash)
 command -v helm    &>/dev/null && source <(helm completion bash)
 EOF
 
-    echo ">>> Lab disponível em: /home/vagrant/523"
-    ln -sf /vagrant /home/vagrant/523
-    chown -h vagrant:vagrant /home/vagrant/523
+    echo ">>> Clonando repositório do lab..."
+    sudo -u vagrant git clone https://github.com/4linux/523.git /home/vagrant/523
 
     echo ""
     echo "============================================"

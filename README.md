@@ -21,13 +21,14 @@ Você vai construir um ambiente completo de GitOps — repositório Git, operado
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                     Sua máquina                         │
+│                    VM Vagrant                           │
+│                 (192.168.56.10)                         │
 │                                                         │
-│  Browser / Terminal                                     │
-│  localhost:3000  →  Gitea  (Git server)                 │
-│  localhost:8080  →  ArgoCD (GitOps operator)            │
-│  localhost:9090  →  Aplicação Flask                     │
-│  localhost:4566  →  Floci  (AWS local)                  │
+│  Browser / Terminal (do host)                           │
+│  192.168.56.10:3000  →  Gitea  (Git server)             │
+│  192.168.56.10:8080  →  ArgoCD (GitOps operator)        │
+│  192.168.56.10:9090  →  Aplicação Flask                 │
+│  192.168.56.10:4566  →  Floci  (AWS local)              │
 │                                                         │
 │  ┌──────────────────────────────────────────────────┐   │
 │  │              Cluster Kind (Docker)               │   │
@@ -74,16 +75,36 @@ Rollback = `git revert` — o cluster nunca é modificado diretamente.
 
 ## Início rápido
 
-```bash
-# 1. Clonar o repositório
-git clone https://github.com/4linux/523-devops-essentials-lab.git
-cd 523-devops-essentials-lab
+### Com Vagrant (recomendado para o curso)
 
-# 2. Subir o lab completo (~5-10 minutos na primeira vez)
+```bash
+# 1. Subir a VM (~10-15 minutos na primeira vez — instala todas as ferramentas)
+vagrant up
+
+# 2. Entrar na VM
+vagrant ssh
+
+# 3. Subir o lab completo (~5-10 minutos)
+cd ~/523
 bash setup.sh
 ```
 
-Após o setup:
+Após o setup, acesse pelo **host** (sua máquina física):
+
+| Serviço | Endereço | Credenciais |
+|---|---|---|
+| **Gitea** | http://192.168.56.10:3000 | `gitadmin` / `gitadmin123` |
+| **ArgoCD** | http://192.168.56.10:8080 | `admin` / (ver abaixo) |
+| **Aplicação** | http://192.168.56.10:9090 | — |
+| **Floci** | http://192.168.56.10:4566 | `test` / `test` |
+
+### Sem Vagrant (máquina com Docker + ferramentas já instaladas)
+
+```bash
+git clone https://github.com/4linux/523.git
+cd 523
+bash setup.sh
+```
 
 | Serviço | Endereço | Credenciais |
 |---|---|---|
@@ -138,6 +159,8 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 ## Exercícios do lab
 
+> **Vagrant VM:** use `192.168.56.10` no lugar de `localhost` para acessar os serviços pelo browser do host.
+
 ### Exercício 1 — Ciclo GitOps completo
 
 Altere a mensagem de boas-vindas da aplicação e veja o ArgoCD fazer o deploy automaticamente.
@@ -159,8 +182,8 @@ git commit -m "feat: atualiza mensagem do alert bar"
 git push
 
 # 5. Aguardar o ArgoCD sincronizar (~3 minutos)
-# Acompanhe em: http://localhost:8080
-# Resultado em: http://localhost:9090
+# Acompanhe em: http://192.168.56.10:8080  (Vagrant) | http://localhost:8080  (direto)
+# Resultado em: http://192.168.56.10:9090  (Vagrant) | http://localhost:9090  (direto)
 ```
 
 ### Exercício 2 — Escalar a aplicação
@@ -198,6 +221,8 @@ kubectl get pods -n devops-lab
 
 ### Exercício 5 — SQS com OpenTofu
 
+Os comandos abaixo são executados **dentro da VM** (`vagrant ssh`). O Floci está acessível em `localhost:4566` de dentro da VM.
+
 ```bash
 cd aws-lab/terraform
 
@@ -226,6 +251,8 @@ tofu destroy -auto-approve
 ```
 
 ### Exercício 6 — S3 com AWS CLI
+
+Os comandos abaixo são executados **dentro da VM** (`vagrant ssh`).
 
 ```bash
 export AWS_ENDPOINT_URL=http://localhost:4566
@@ -286,15 +313,23 @@ kubectl get pods -n gitea
 ```bash
 kubectl get pods -n tools
 kubectl logs -n tools deploy/floci
-curl http://localhost:4566/_localstack/health
+curl http://localhost:4566/_localstack/health   # de dentro da VM
 ```
 
-### Porta já em uso no host
+### Porta já em uso (sem Vagrant)
 
 ```bash
 lsof -i :3000
 lsof -i :8080
 # Pare o processo ou rode: bash teardown.sh
+```
+
+### Vagrant: VM não inicia
+
+```bash
+vagrant status
+vagrant reload        # reinicia a VM
+vagrant destroy -f && vagrant up  # recria do zero
 ```
 
 ### ArgoCD não sincroniza automaticamente
