@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devops-app
+  namespace: argocd
+  # Finalizer garante que o ArgoCD limpe os recursos do cluster ao deletar esta Application
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    # URL interna do Gitea dentro do cluster — sem depender de localhost.
+    # O ArgoCD roda no cluster e se comunica com o Gitea pelo service ClusterIP.
+    repoURL: http://gitea-http.gitea.svc.cluster.local:3000/gitadmin/devops-lab.git
+    targetRevision: HEAD
+    path: k8s
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+    automated:
+      # prune: remove do cluster recursos que foram deletados do repositório
+      prune: true
+      # selfHeal: restaura recursos que foram modificados manualmente no cluster
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
