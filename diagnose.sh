@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-MODEL="${OPENROUTER_MODEL:-mistralai/mistral-7b-instruct:free}"
+MODEL="${OPENROUTER_MODEL:-openrouter/free}"
 API_URL="https://openrouter.ai/api/v1/chat/completions"
 
 # ── Validações ────────────────────────────────────────────────────────────────
